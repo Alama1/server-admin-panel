@@ -1,0 +1,33 @@
+{
+  "name": "server-admin-panel",
+  "version": "1.0.0",
+  "description": "Admin panel for my server",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "build": "tsc --resolveJsonModule"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alama1/server-admin-panel.git"
+  },
+  "author": "Maksim Kuzhdenko",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Alama1/server-admin-panel/issues"
+  },
+  "homepage": "https://github.com/Alama1/server-admin-panel#readme",
+  "dependencies": {
+    "@types/mongoose": "^5.11.97",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongodb": "^6.6.1",
+    "mongoose": "^8.3.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.11",
+    "typescript": "^5.4.5"
+  }
+}

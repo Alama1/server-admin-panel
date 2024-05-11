@@ -1,0 +1,13 @@
+{
+    "mongo": {
+        "mongoURL": "mongodb+srv://<username>:<password>@admin-panel.xmqxjox.mongodb.net/?retryWrites=true&w=majority&appName=admin-panel",
+        "databaseName": "test",
+        "auth": {
+            "username": "",
+            "password": ""
+        }
+    },
+    "express": {
+        "port": 3000
+    }
+}
