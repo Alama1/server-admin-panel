@@ -8,14 +8,14 @@ class Application {
     public database: Database
 
     constructor() {
-        this.server = new Server();
+        this.server = new Server(this);
         this.config = new Config();
         this.database = new Database(this);
     }
 
     connect() {
-
         this.server.start();
+        this.database.connect();
     }
 }
 

@@ -1,19 +1,41 @@
 import { Router, Request, Response } from 'express'
+import { Server } from './Server';
 
-export const routes = Router()
+export class expressRouter {
+    private server: Server
 
-//GET
-routes.get('/helloworld', (req: Request, res: Response) => {
+    constructor(server: Server) {
+        this.server = server;
+    }
 
-    res.json({message: "halo"})
-    res.status(200)
-})
+    createRoutes() {
+        const routes = Router()
 
-//POST
-
-
-//PUT
-
-//DELETE
-
+        //GET
+        routes.get('/helloworld', (req: Request, res: Response) => {
+    
+            res.json({message: "halo"})
+            res.status(200)
+        })
+    
+        //POST
+        routes.post('/user', this.createUser.bind(this))
+    
+        //PUT
+    
+        //DELETE
+    
+        //FUNCTIONS
+    
+        return routes
+    }
+    async createUser(req: Request, res: Response) {
+        const {username, email, avatar} = req.body
+        console.log(username)
+        console.log(email)
+        console.log(avatar)
+        const createdUser = await this.server.app.database.createNewUser(username, email, avatar)
+        res.send(createdUser)
+    }
+}
 
