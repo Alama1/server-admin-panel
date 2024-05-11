@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Application from "../Application";
+import bcrypt from 'bcrypt'
 
 import { IUser, userModel } from './models/user'
 
@@ -11,7 +12,7 @@ export class Database {
         this.app = app
     }
 
-    connect(): void {
+    public connect(): void {
 
         try{
             mongoose
@@ -23,15 +24,27 @@ export class Database {
         }
     }
 
-    async createNewUser(name: String, email: String, avatar?: String): Promise<IUser> {
-
+    async createNewUser(username: string, email: string, password: string): Promise<IUser> {
+        const verificationString = (Math.random() + 1).toString(35).substring(2)
         try {
-            const res = await userModel.create({ name, email, avatar })
+            const hashedPassword = await this.passwordHash(password)
+            const res = await userModel.create({ username, email, password: hashedPassword, verificationString }) 
             return res
         } catch (error) {
-            console.error('Error creating user', error)
             throw error
         }
+    }
 
+    public async confirmPassword(email: string, password: string): Promise<Boolean> {
+        const foundUser = await userModel.findOne({ email })
+        if (!foundUser) {
+            return false
+        }
+        return bcrypt.compareSync(password, foundUser.password)
+    }
+
+    private async passwordHash(password: string) {
+        const saltRounds = 8
+        return await bcrypt.hash(password, saltRounds)
     }
 }

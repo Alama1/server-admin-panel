@@ -1,15 +1,21 @@
 import mongoose, { Schema, Document } from 'mongoose'
 
 export interface IUser extends Document {
-    name: string
+    username: string
     email: string
-    avatar?: string
+    password: string
+    verified: string
+    verificationString: string
+    accessLevel: string
 }
 
 const UserSchema: Schema = new Schema({
-    name: { type: String, required: true },
+    username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    avatar: { type: String, required: false }
+    password: { type: String, required: true },
+    verified: { type: Boolean, default: false },
+    verificationString: { type: String, required: true },
+    acessLevel: { type: String, default: 'user' }
 })
 
 export const userModel = mongoose.model<IUser>('user', UserSchema)
