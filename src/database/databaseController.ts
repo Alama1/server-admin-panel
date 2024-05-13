@@ -36,7 +36,7 @@ export class Database {
     }
 
     public async confirmPassword(email: string, password: string): Promise<Boolean> {
-        const foundUser = await userModel.findOne({ email })
+        const foundUser = await this.getUserByEmail(email)
         if (!foundUser) {
             return false
         }
@@ -46,5 +46,9 @@ export class Database {
     private async passwordHash(password: string) {
         const saltRounds = 8
         return await bcrypt.hash(password, saltRounds)
+    }
+
+    public async getUserByEmail(email: string): Promise<Promise<IUser> | null> {
+        return userModel.findOne({ email })
     }
 }

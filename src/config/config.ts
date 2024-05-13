@@ -13,6 +13,9 @@ export class Config {
         },
         "express": {
             "port": 3000
+        },
+        "jwt": {
+            "secret": ""
         }
     }
 
@@ -24,6 +27,7 @@ export class Config {
 
             this.properties.mongo.auth.password = process.env.MONGOPASSWORD || ''
             this.properties.mongo.auth.username = process.env.MONGOUSERNAME || ''
+            this.properties.jwt.secret = process.env.JWTSECRET || ''
         } else {
             console.log('Config not found! Pls ensure that you have config.json in the project root folder.')
 

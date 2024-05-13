@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { Server } from './Server';
-import { Error } from 'mongoose'
+import jwt from "jsonwebtoken";
 
 export class expressRouter {
     private server: Server
@@ -57,12 +57,16 @@ export class expressRouter {
     }
 
     async signIn(req: Request, res: Response) {
-        const { email, password } = req.body
+        const { requestEmail, password } = req.body
 
-        const confirmedPassword = await this.server.app.database.confirmPassword(email, password)
+        const confirmedPassword = await this.server.app.database.confirmPassword(requestEmail, password)
         if (confirmedPassword) {
             res.status(200)
-            
+            const userData = await this.server.app.database.getUserByEmail(requestEmail)
+            if (!userData) return
+            const { username, email, verified, accessLevel } = userData
+            const token = jwt.sign({ username, email, verified, accessLevel }, this.server.app.config.properties.jwt.secret)
+            res.send({ success: true, message: { token }})
         } else {
             res.status(401)
             res.send({ success: false, message: 'Username or password is not correct.'})
