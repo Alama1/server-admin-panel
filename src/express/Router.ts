@@ -28,18 +28,23 @@ export class expressRouter {
     
         //DELETE
     
-        //FUNCTIONS
-    
         return routes
     }
 
     async execCommand(req: Request, res: Response) {
         const { command } = req.body
-        const commandResp = await this.server.app.console.execCommand(command)
-        res.send({ "message": commandResp })
+        this.server.app.console.execCommand(command)
+        .then((execRes) => {
+            res.status(200)
+            res.send({ success: true, message: 'Command executed successfully!', commandResponse: execRes })
+        })
+        .catch((err) => {
+            res.status(422)
+            res.send({ success: false, message: 'Invalid command'})
+        })
     }
 
-    async signUp(req: Request, res: Response) {
+    signUp(req: Request, res: Response): void {
         const { email, username, password } = req.body
 
         this.server.app.database.createNewUser(username, email, password).then((user) => {
@@ -51,26 +56,37 @@ export class expressRouter {
                 res.send({ success: false, message: 'User with this email already exists!' })
                 return
             }
+            console.log(error.message)
             res.send({ success: false, message: 'Error crating user!' })
         })
         
     }
 
-    async signIn(req: Request, res: Response) {
-        const { requestEmail, password } = req.body
+    async signIn(req: Request, res: Response): Promise<void> {
+        this.server.app.database.confirmPassword(req.body.email, req.body.password)
+        .then((response) => {
+            if (!response) {
+                res.status(401)
+                return res.send({ success: false, message: 'Username or password is not correct.'})
+            }
 
-        const confirmedPassword = await this.server.app.database.confirmPassword(requestEmail, password)
-        if (confirmedPassword) {
-            res.status(200)
-            const userData = await this.server.app.database.getUserByEmail(requestEmail)
-            if (!userData) return
-            const { username, email, verified, accessLevel } = userData
-            const token = jwt.sign({ username, email, verified, accessLevel }, this.server.app.config.properties.jwt.secret)
-            res.send({ success: true, message: { token }})
-        } else {
-            res.status(401)
-            res.send({ success: false, message: 'Username or password is not correct.'})
-        }
+            this.server.app.database.getUserByEmail(req.body.email)
+            .then(async (userData) => {
+                if (!userData) return
+
+                const { username, email, verified, accessLevel } = await userData
+                const token = jwt.sign({ username, email, verified, accessLevel }, this.server.app.config.properties.jwt.secret, { expiresIn: '3d' })
+                res.status(200)
+                res.send({ success: true, message: { token }})
+            }).catch((error) => {
+                res.status(500)
+                res.send({ success: false, message: 'Internal server error.' })
+            })
+        })
+        .catch((error) => {
+            res.status(500)
+            res.send({ success: false, message: 'Internal server error.' })
+        })
+        
     }
 }
-

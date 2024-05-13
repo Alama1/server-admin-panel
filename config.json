@@ -9,5 +9,8 @@
     },
     "express": {
         "port": 3000
+    },
+    "jwt": {
+        "secret": ""
     }
 }

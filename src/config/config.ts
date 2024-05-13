@@ -35,7 +35,7 @@ export class Config {
         }
     }
 
-    getMongoURL() {
+    getMongoURL(): string {
         return this.properties.mongo.mongoURL.replace('<password>', this.properties.mongo.auth.password).replace('<username>', this.properties.mongo.auth.username)
     }
 }

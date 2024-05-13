@@ -16,7 +16,7 @@ class Application {
         this.console = new ConsoleManager(this)
     }
 
-    async connect() {
+    connect(): void {
         this.server.start();
         this.database.connect();
     }

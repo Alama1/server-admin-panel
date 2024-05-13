@@ -36,16 +36,19 @@ export class Database {
     }
 
     public async confirmPassword(email: string, password: string): Promise<Boolean> {
+
         const foundUser = await this.getUserByEmail(email)
+
         if (!foundUser) {
             return false
         }
+
         return bcrypt.compareSync(password, foundUser.password)
     }
 
-    private async passwordHash(password: string) {
+    private async passwordHash(password: string): Promise<string> {
         const saltRounds = 8
-        return await bcrypt.hash(password, saltRounds)
+        return bcrypt.hash(password, saltRounds)
     }
 
     public async getUserByEmail(email: string): Promise<Promise<IUser> | null> {
