@@ -3,6 +3,7 @@ import Application from "../Application";
 import bcrypt from 'bcrypt'
 
 import { IUser, userModel } from './models/user'
+import { IHamster, hamstersModel } from "./models/hamsterFact";
 
 export class Database {
 
@@ -17,7 +18,7 @@ export class Database {
         try{
             mongoose
                 .connect(this.app.config.getMongoURL(), {retryWrites: true, w: 'majority', dbName: this.app.config.properties.mongo.databaseName})
-            console.log('Database connected!')
+            console.log('[database] Database connected!')
 
         } catch(e) {
             console.log('Error!')
@@ -33,6 +34,22 @@ export class Database {
         } catch (error) {
             throw error
         }
+    }
+
+    async createHamsterFact(title: string, description: string): Promise<IHamster> {
+        try {
+            const res = await hamstersModel.create({ title, description })
+            return res
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async get5HamsterFacts(): Promise<IHamster []> {
+        const count = await hamstersModel.countDocuments().exec();
+        const random = Math.floor(Math.random() * count);
+        const documents = await hamstersModel.find().skip(random).limit(5).exec();
+        return documents;
     }
 
     public async confirmPassword(email: string, password: string): Promise<Boolean> {

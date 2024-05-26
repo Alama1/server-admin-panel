@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import { expressRouter } from './Router'
 import Application from '../Application'
 import jwt from "jsonwebtoken";
+import cors from 'cors'
 
 dotenv.config()
 
@@ -21,6 +22,7 @@ export class Server {
     private configureRoutes(): void {
         const router = new expressRouter(this)
         this.server.use(express.json())
+        this.server.use(cors())
         this.server.use(this.logger.bind(this))
         this.server.use(this.authCheck.bind(this))
         this.server.use(this.verifyBody.bind(this))
@@ -28,23 +30,24 @@ export class Server {
         console.log('[express]: Routes configured!')
     }
 
-    public start():void {
+    public start(): void {
 
         this.server.listen(this.port, () => {
 
-            console.log(`[express]: Server started!`)
+            console.log(`[express] Server started!`)
         })
     }
 
     private logger(req: Request, res: Response, next: NextFunction): void {
-        console.log(`New ${req.method} request for the route ${req.originalUrl}`)
+        console.log(`[express] New ${req.method} request for the route ${req.originalUrl}`)
         next()
     }
 
-    verifyBody(req: Request, res: Response, next: NextFunction): void {
+    private verifyBody(req: Request, res: Response, next: NextFunction): void {
         if(req.method === 'POST' && req.originalUrl === '/login') {
             const { email, password } = req.body
             if (!email || !password) {
+                console.log('And here')
                 res.status(401)
                 res.send({ success: false, message: 'Invalid credentials.' })
                 return
@@ -52,6 +55,7 @@ export class Server {
         }
         if(req.method === 'POST' && req.originalUrl === '/signup') {
             const { username, password, email } = req.body
+            console.log(req.body)
             if (!username || !password || !email) {
                 res.status(401)
                 res.send({ success: false, message: 'Invalid credentials.'})
@@ -70,8 +74,8 @@ export class Server {
         next()
     }
 
-    authCheck(req: Request, res: Response, next: NextFunction): void {
-        if (req.originalUrl === '/login' || req.originalUrl === '/signup') {
+    private authCheck(req: Request, res: Response, next: NextFunction): void {
+        if (req.originalUrl === '/login' || req.originalUrl === '/signup' || req.originalUrl === '/hamster') {
             return next()
         }
 

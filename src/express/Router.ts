@@ -18,11 +18,14 @@ export class expressRouter {
             res.json({message: "halo"})
             res.status(200)
         })
+        routes.get('/updateToken', this.updateToken.bind(this))
+        routes.get('/hamster', this.getHamsterFacts.bind(this))
     
         //POST
         routes.post('/command', this.execCommand.bind(this))
         routes.post('/signup', this.signUp.bind(this))
         routes.post('/login', this.signIn.bind(this))
+        routes.post('/hamster', this.addHamsterFact.bind(this))
     
         //PUT
     
@@ -31,7 +34,7 @@ export class expressRouter {
         return routes
     }
 
-    async execCommand(req: Request, res: Response) {
+    private async execCommand(req: Request, res: Response) {
         const { command } = req.body
         this.server.app.console.execCommand(command)
         .then((execRes) => {
@@ -44,7 +47,7 @@ export class expressRouter {
         })
     }
 
-    signUp(req: Request, res: Response): void {
+    private signUp(req: Request, res: Response): void {
         const { email, username, password } = req.body
 
         this.server.app.database.createNewUser(username, email, password).then((user) => {
@@ -62,7 +65,7 @@ export class expressRouter {
         
     }
 
-    async signIn(req: Request, res: Response): Promise<void> {
+    private async signIn(req: Request, res: Response): Promise<void> {
         this.server.app.database.confirmPassword(req.body.email, req.body.password)
         .then((response) => {
             if (!response) {
@@ -88,5 +91,64 @@ export class expressRouter {
             res.send({ success: false, message: 'Internal server error.' })
         })
         
+    }
+
+    private async updateToken(req: Request, res: Response): Promise<void> {
+        const authToken = req.headers.authorization
+        if (!authToken) return
+
+        const token = authToken.split(' ')[1]
+
+        const decoded: any = jwt.decode(token);
+        if (!decoded || !decoded.exp) {
+            res.status(401)
+            res.send({ success: false, message: 'Invalid token.' })
+            return
+        }
+
+        if (this.isTokenExpiringSoon(token)) {
+            delete decoded.exp
+            const newToken = jwt.sign(decoded, this.server.app.config.properties.jwt.secret, { expiresIn: '7d' });
+            res.send({ success: true, message: { token: newToken } });
+            return 
+        } else {
+            res.status(200)
+            res.send({ success: false, message: 'Only tokens with less than 1 day lifetime can be extended.'})
+        }
+    }
+
+    async getHamsterFacts(req: Request, res: Response): Promise<void> {
+        this.server.app.database.get5HamsterFacts().then((response) => {
+            res.status(200)
+            res.send({ success: true, message: response })
+        }).catch((e) => {
+            res.status(500)
+            res.send({ success: false, message: [{title: 'Something went wrong, pls reload the page', description: 'Oops'}]})
+        })
+    }
+
+    async addHamsterFact(req: Request, res: Response): Promise<void> {
+        const { title, description } = req.body
+        this.server.app.database.createHamsterFact(title, description).then((response) => {
+            res.status(201)
+            res.send({ success: true, message: 'Fact created successfully!' })
+        }).catch((e) => {
+            res.status(500)
+            res.send({ success: false, message: 'Failed to create a hamster fact.' })
+        })
+    }
+
+    isTokenExpiringSoon(token: string): Boolean {
+        try {
+            const decoded: any = jwt.decode(token)
+
+            if (!decoded || !decoded.exp) return false
+
+            const currentTimestamp = Math.floor(Date.now() / 1000);
+            const oneDayInSeconds = 24 * 60 * 60;
+            return (decoded.exp - currentTimestamp) < oneDayInSeconds;
+        } catch (e) {
+            return false
+        }
     }
 }

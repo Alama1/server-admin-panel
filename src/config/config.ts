@@ -21,7 +21,7 @@ export class Config {
 
     constructor() {
         if (fs.existsSync(path.resolve('config.json'))) {
-            console.log('Config found!')
+            console.log('[config] Config file found!')
             const configFile = fs.readFileSync(path.resolve('config.json'), 'utf-8')
             this.properties = JSON.parse(configFile)
 
@@ -29,7 +29,7 @@ export class Config {
             this.properties.mongo.auth.username = process.env.MONGOUSERNAME || ''
             this.properties.jwt.secret = process.env.JWTSECRET || ''
         } else {
-            console.log('Config not found! Pls ensure that you have config.json in the project root folder.')
+            console.log('[config] Config file not found! Pls ensure that you have config.json in the project root folder.')
 
             process.exit(1)
         }
