@@ -12,11 +12,19 @@ export class Server {
     private server: Express
     private readonly port = process.env.PORT || 3000
     public app: Application
+    public gustavoIP: string
+    public gustavoSecret: string
 
     constructor(app: Application) {
         this.app = app
         this.server = express()
         this.configureRoutes()
+        if(process.env.GUSTAVO_IP && process.env.GUSTAVO_SECRET) {
+            this.gustavoIP = process.env.GUSTAVO_IP
+            this.gustavoSecret = process.env.GUSTAVO_SECRET
+        } else {
+            throw Error('Cannot find gustavo ip and secret in the env variables.')
+        }
     }
 
     private configureRoutes(): void {
