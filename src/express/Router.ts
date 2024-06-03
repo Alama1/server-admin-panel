@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
-import { Server } from './Server';
 import jwt from "jsonwebtoken";
+
+import { Server } from './Server';
 
 export class expressRouter {
     private server: Server
@@ -20,18 +21,63 @@ export class expressRouter {
         })
         routes.get('/updateToken', this.updateToken.bind(this))
         routes.get('/hamster', this.getHamsterFacts.bind(this))
+        routes.get('/gustavoGifs', this.getServerGifs.bind(this))
+        routes.get('/reactionChances', this.getReactionChances.bind(this))
     
         //POST
         routes.post('/command', this.execCommand.bind(this))
         routes.post('/signup', this.signUp.bind(this))
         routes.post('/login', this.signIn.bind(this))
         routes.post('/hamster', this.addHamsterFact.bind(this))
+        routes.post('/addReactionGif', this.addReactionGif.bind(this))
+        routes.post('/reactionChance', this.setReactionChances.bind(this))
     
         //PUT
     
         //DELETE
     
         return routes
+    }
+
+    private async setReactionChances(req: Request, res: Response) {
+        const { gifChance, type } = req.body
+
+        try {
+            const gustavoRes = await fetch(`http://${this.server.gustavoIP}/reaction-chance`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': `bearer ${this.server.gustavoSecret}`
+                },
+                body: JSON.stringify({ gifChance, type })
+            })
+            const response = await gustavoRes.json()
+            res.status(200)
+            res.send(response)
+        } catch(e) {
+            res.status(500)
+            console.log(e)
+            res.send({ success: false, message: 'Internal server error.' })
+        }
+    }
+
+    private async getReactionChances(req: Request, res: Response) {
+        try {
+            const gustavoRes = await fetch(`http://${this.server.gustavoIP}/reaction-chance`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': `bearer ${this.server.gustavoSecret}`
+                }
+            })
+            const response = await gustavoRes.json()
+            res.status(200)
+            res.send(response)
+        } catch(e) {
+            res.status(500)
+            console.log(e)
+            res.send({ success: false, message: 'Internal server error.' })
+        }
     }
 
     private async execCommand(req: Request, res: Response) {
@@ -45,6 +91,46 @@ export class expressRouter {
             res.status(422)
             res.send({ success: false, message: 'Invalid command'})
         })
+    }
+
+    private async addReactionGif(req: Request, res: Response) {
+        const { user, url } = req.body
+        try {
+            const gustavoRes = await fetch(`http://${this.server.gustavoIP}/gif-reaction`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': `bearer ${this.server.gustavoSecret}`
+                },
+                body: JSON.stringify({ user, url })
+            })
+            const response = await gustavoRes.json()
+            res.status(200)
+            res.send(response)
+        } catch(e) {
+            res.status(500)
+            console.log(e)
+            res.send({ success: false, message: 'Internal server error.' })
+        }
+    }
+
+    private async getServerGifs(req: Request, res: Response) {
+        try {
+            const gustavoRes = await fetch(`http://${this.server.gustavoIP}/gif-reaction`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': `bearer ${this.server.gustavoSecret}`
+                }
+            })
+            const response = await gustavoRes.json()
+            res.status(200)
+            res.send(response)
+        } catch(e) {
+            res.status(500)
+            res.send({ success: false, message: 'Internal server error.'})
+        }
+        
     }
 
     private signUp(req: Request, res: Response): void {
@@ -62,7 +148,6 @@ export class expressRouter {
             console.log(error.message)
             res.send({ success: false, message: 'Error crating user!' })
         })
-        
     }
 
     private async signIn(req: Request, res: Response): Promise<void> {
@@ -90,7 +175,6 @@ export class expressRouter {
             res.status(500)
             res.send({ success: false, message: 'Internal server error.' })
         })
-        
     }
 
     private async updateToken(req: Request, res: Response): Promise<void> {

@@ -14,6 +14,7 @@ export class Server {
     public app: Application
     public gustavoIP: string
     public gustavoSecret: string
+    private unrestrictedRoutes: Array<string>
 
     constructor(app: Application) {
         this.app = app
@@ -25,6 +26,7 @@ export class Server {
         } else {
             throw Error('Cannot find gustavo ip and secret in the env variables.')
         }
+        this.unrestrictedRoutes = ['/login', '/signup', '/hamster', '/globalGifs']
     }
 
     private configureRoutes(): void {
@@ -41,7 +43,6 @@ export class Server {
     public start(): void {
 
         this.server.listen(this.port, () => {
-
             console.log(`[express] Server started!`)
         })
     }
@@ -59,8 +60,9 @@ export class Server {
                 res.status(401)
                 res.send({ success: false, message: 'Invalid credentials.' })
                 return
-            } 
+            }
         }
+
         if(req.method === 'POST' && req.originalUrl === '/signup') {
             const { username, password, email } = req.body
             console.log(req.body)
@@ -83,7 +85,7 @@ export class Server {
     }
 
     private authCheck(req: Request, res: Response, next: NextFunction): void {
-        if (req.originalUrl === '/login' || req.originalUrl === '/signup' || req.originalUrl === '/hamster') {
+        if (this.unrestrictedRoutes.some((element) => element === req.originalUrl)) {
             return next()
         }
 
