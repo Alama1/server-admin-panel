@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import config from '../../config.json'
 
 export class Config {
     properties = {
@@ -20,10 +21,9 @@ export class Config {
     }
 
     constructor() {
-        if (fs.existsSync(path.resolve('config.json'))) {
+        if (config) {
             console.log('[config] Config file found!')
-            const configFile = fs.readFileSync(path.resolve('config.json'), 'utf-8')
-            this.properties = JSON.parse(configFile)
+            this.properties = config
 
             this.properties.mongo.auth.password = process.env.MONGOPASSWORD || ''
             this.properties.mongo.auth.username = process.env.MONGOUSERNAME || ''
