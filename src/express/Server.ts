@@ -11,7 +11,8 @@ dotenv.config()
 
 export class Server {
 
-    private server: any
+    private server: Express
+    private httpsServer: any
     private readonly port = process.env.PORT || 3000
     public app: Application
     public gustavoIP: string
@@ -24,7 +25,9 @@ export class Server {
         if (process.env.ENV === 'DEV') {
             this.server = express()
         } else {
-            this.server = https.createServer({
+            this.server = express()
+            
+            this.httpsServer = https.createServer({
                 key: fs.readFileSync('.ssh/server.key', 'utf-8'),
                 cert: fs.readFileSync('.ssh/server.crt', 'utf-8')
             }, express())
@@ -52,9 +55,15 @@ export class Server {
     }
 
     public start(): void {
-        this.server.listen(this.port, () => {
-            console.log(`[express] Server started!`)
-        })
+        if (process.env.ENV === 'DEV') {
+            this.server.listen(this.port, () => {
+                console.log(`[express] Server started!`)
+            })
+        } else {
+            this.httpsServer.listen(this.port, () => {
+                console.log(`[express] Server started!`)
+            })
+        }
     }
 
     private logger(req: Request, res: Response, next: NextFunction): void {
