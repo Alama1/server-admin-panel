@@ -4,12 +4,14 @@ import { expressRouter } from './Router'
 import Application from '../Application'
 import jwt from "jsonwebtoken";
 import cors from 'cors'
+import https from 'https'
+import fs from 'fs'
 
 dotenv.config()
 
 export class Server {
 
-    private server: Express
+    private server: any
     private readonly port = process.env.PORT || 3000
     public app: Application
     public gustavoIP: string
@@ -18,7 +20,16 @@ export class Server {
 
     constructor(app: Application) {
         this.app = app
-        this.server = express()
+        
+        if (process.env.ENV === 'DEV') {
+            this.server = express()
+        } else {
+            this.server = https.createServer({
+                key: fs.readFileSync('.ssh/server.key', 'utf-8'),
+                cert: fs.readFileSync('.ssh/server.crt', 'utf-8')
+            }, express())
+        }
+
         this.configureRoutes()
         if(process.env.GUSTAVO_IP && process.env.GUSTAVO_SECRET) {
             this.gustavoIP = process.env.GUSTAVO_IP
@@ -41,7 +52,6 @@ export class Server {
     }
 
     public start(): void {
-
         this.server.listen(this.port, () => {
             console.log(`[express] Server started!`)
         })
