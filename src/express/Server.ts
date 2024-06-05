@@ -61,7 +61,7 @@ export class Server {
             })
         } else {
             this.httpsServer.listen(this.port, () => {
-                console.log(`[express] Server started!`)
+                console.log(`[express] Server started on port ${this.port}!`)
             })
         }
     }
