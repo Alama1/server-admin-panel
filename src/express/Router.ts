@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express'
 import jwt from "jsonwebtoken";
+import { body, validationResult } from 'express-validator'
 
 import { Server } from './Server';
 
@@ -25,12 +26,30 @@ export class expressRouter {
         routes.get('/reactionChances', this.getReactionChances.bind(this))
     
         //POST
-        routes.post('/command', this.execCommand.bind(this))
-        routes.post('/signup', this.signUp.bind(this))
-        routes.post('/login', this.signIn.bind(this))
-        routes.post('/hamster', this.addHamsterFact.bind(this))
-        routes.post('/addReactionGif', this.addReactionGif.bind(this))
-        routes.post('/reactionChance', this.setReactionChances.bind(this))
+        routes.post('/command',[
+            body('command').isString().notEmpty()
+        ] , this.execCommand.bind(this))
+        routes.post('/signup', [
+            body('email').isEmail().withMessage('Email is invalid.'),
+            body('password').isLength(6).withMessage('Password must be at least 6 characters long.'),
+            body('username').isString().withMessage('Username is invalid.')
+        ] , this.signUp.bind(this))
+        routes.post('/login', [
+            body('email').isEmail().withMessage('Email is invalid.'),
+            body('password').isString().notEmpty()
+        ], this.signIn.bind(this))
+        routes.post('/hamster',[
+            body('title').isString().notEmpty(),
+            body('description').isString().notEmpty()
+        ] , this.addHamsterFact.bind(this))
+        routes.post('/addReactionGif',[
+            body('user').isString().notEmpty(),
+            body('url').isString().notEmpty()
+        ] , this.addReactionGif.bind(this))
+        routes.post('/reactionChance',[
+            body('gifChance').notEmpty(),
+            body('type').isString().notEmpty()
+        ] , this.setReactionChances.bind(this))
     
         //PUT
     
@@ -136,7 +155,7 @@ export class expressRouter {
     private signUp(req: Request, res: Response): void {
         const { email, username, password } = req.body
 
-        this.server.app.database.createNewUser(username, email, password).then((user) => {
+        this.server.app.database.createNewUser(username.trim(), email.trim(), password.trim()).then((user) => {
             res.status(201)
             res.send({ success: true, message: 'User created successfully!' })
         }).catch((error) => {
@@ -151,7 +170,7 @@ export class expressRouter {
     }
 
     private async signIn(req: Request, res: Response): Promise<void> {
-        this.server.app.database.confirmPassword(req.body.email, req.body.password)
+        this.server.app.database.confirmPassword(req.body.email.trim(), req.body.password.trim())
         .then((response) => {
             if (!response) {
                 res.status(401)

@@ -40,7 +40,14 @@ export class Server {
         this.server.use(cors())
         this.server.use(this.logger.bind(this))
         this.server.use(this.authCheck.bind(this))
-        this.server.use(this.verifyBody.bind(this))
+        this.server.use((req, res, next) => {
+            for (const key in req.body) {
+              if (typeof req.body[key] === 'string') {
+                req.body[key] = req.body[key].trim();
+              }
+            }
+            next();
+          });
         this.server.use('/', router.createRoutes())
         console.log('[express]: Routes configured!')
     }
@@ -53,38 +60,6 @@ export class Server {
 
     private logger(req: Request, res: Response, next: NextFunction): void {
         console.log(`[express] New ${req.method} request for the route ${req.originalUrl}`)
-        next()
-    }
-
-    private verifyBody(req: Request, res: Response, next: NextFunction): void {
-        if(req.method === 'POST' && req.originalUrl === '/login') {
-            const { email, password } = req.body
-            if (!email || !password) {
-                console.log('And here')
-                res.status(401)
-                res.send({ success: false, message: 'Invalid credentials.' })
-                return
-            }
-        }
-
-        if(req.method === 'POST' && req.originalUrl === '/signup') {
-            const { username, password, email } = req.body
-            console.log(req.body)
-            if (!username || !password || !email) {
-                res.status(401)
-                res.send({ success: false, message: 'Invalid credentials.'})
-                return
-            }
-        }
-
-        if(req.method === 'POST' && req.originalUrl === '/command') {
-            const { command } = req.body
-            if (!command) {
-                res.status(422)
-                res.send({ success: false, message: 'Command not specified.' })
-                return
-            }
-        }
         next()
     }
 
