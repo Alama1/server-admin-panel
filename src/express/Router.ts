@@ -24,6 +24,7 @@ export class expressRouter {
         routes.get('/hamster', this.getHamsterFacts.bind(this))
         routes.get('/gustavoGifs', this.getServerGifs.bind(this))
         routes.get('/reactionChances', this.getReactionChances.bind(this))
+        routes.get('/users', this.getUsers.bind(this))
     
         //POST
         routes.post('/command',[
@@ -56,6 +57,25 @@ export class expressRouter {
         //DELETE
     
         return routes
+    }
+
+    private async getUsers(req: Request, res: Response) {
+        try {
+            const gustavoRes = await fetch(`http://${this.server.gustavoIP}/users`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': `bearer ${this.server.gustavoSecret}`
+                },
+            })
+            const response = await gustavoRes.json()
+            res.status(200)
+            res.send(response)
+        } catch(e) {
+            res.status(500)
+            console.log(e)
+            res.send({ success: false, message: 'Internal server error.' })
+        }
     }
 
     private async setReactionChances(req: Request, res: Response): Promise<void> {
