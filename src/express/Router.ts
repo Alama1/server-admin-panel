@@ -58,7 +58,13 @@ export class expressRouter {
         return routes
     }
 
-    private async setReactionChances(req: Request, res: Response) {
+    private async setReactionChances(req: Request, res: Response): Promise<void> {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(400).json({ success: false, message: errors.array() });
+            return
+        }
+
         const { gifChance, type } = req.body
 
         try {
@@ -99,7 +105,12 @@ export class expressRouter {
         }
     }
 
-    private async execCommand(req: Request, res: Response) {
+    private async execCommand(req: Request, res: Response): Promise<void> {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(400).send({ success: false, message: errors.array() });
+            return
+        }
         const { command } = req.body
         this.server.app.console.execCommand(command)
         .then((execRes) => {
@@ -112,7 +123,13 @@ export class expressRouter {
         })
     }
 
-    private async addReactionGif(req: Request, res: Response) {
+    private async addReactionGif(req: Request, res: Response): Promise<void> {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(400).json({ success: false, message: errors.array() });
+            return
+        }
+
         const { user, url } = req.body
         try {
             const gustavoRes = await fetch(`http://${this.server.gustavoIP}/gif-reaction`, {
@@ -153,6 +170,12 @@ export class expressRouter {
     }
 
     private signUp(req: Request, res: Response): void {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(400).json({ success: false, message: errors.array() });
+            return
+        }
+
         const { email, username, password } = req.body
 
         this.server.app.database.createNewUser(username.trim(), email.trim(), password.trim()).then((user) => {
@@ -170,6 +193,12 @@ export class expressRouter {
     }
 
     private async signIn(req: Request, res: Response): Promise<void> {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(400).json({ success: false, message: errors.array() });
+            return
+        }
+
         this.server.app.database.confirmPassword(req.body.email.trim(), req.body.password.trim())
         .then((response) => {
             if (!response) {
@@ -231,6 +260,12 @@ export class expressRouter {
     }
 
     async addHamsterFact(req: Request, res: Response): Promise<void> {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(400).json({ success: false, message: errors.array() });
+            return
+        }
+
         const { title, description } = req.body
         this.server.app.database.createHamsterFact(title, description).then((response) => {
             res.status(201)
