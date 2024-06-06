@@ -32,7 +32,7 @@ export class expressRouter {
         ] , this.execCommand.bind(this))
         routes.post('/signup', [
             body('email').isEmail().withMessage('Email is invalid.'),
-            body('password').isLength(6).withMessage('Password must be at least 6 characters long.'),
+            body('password').isLength({ min: 6, max: 64}).withMessage('Password must be at least 6 characters long.'),
             body('username').isString().withMessage('Username is invalid.')
         ] , this.signUp.bind(this))
         routes.post('/login', [
