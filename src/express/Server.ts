@@ -22,16 +22,7 @@ export class Server {
     constructor(app: Application) {
         this.app = app
         
-        if (process.env.ENV === 'DEV') {
-            this.server = express()
-        } else {
-            this.server = express()
-            
-            this.httpsServer = https.createServer({
-                key: fs.readFileSync('.ssh/server.key', 'utf-8'),
-                cert: fs.readFileSync('.ssh/server.crt', 'utf-8')
-            }, express())
-        }
+        this.server = express()
 
         this.configureRoutes()
         if(process.env.GUSTAVO_IP && process.env.GUSTAVO_SECRET) {
@@ -55,15 +46,9 @@ export class Server {
     }
 
     public start(): void {
-        if (process.env.ENV === 'DEV') {
-            this.server.listen(this.port, () => {
-                console.log(`[express] Server started!`)
-            })
-        } else {
-            this.httpsServer.listen(this.port, () => {
-                console.log(`[express] Server started on port ${this.port}!`)
-            })
-        }
+        this.server.listen(this.port, () => {
+            console.log(`[express] Server started on port ${this.port}!`)
+        })
     }
 
     private logger(req: Request, res: Response, next: NextFunction): void {
