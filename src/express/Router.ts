@@ -55,8 +55,32 @@ export class expressRouter {
         //PUT
     
         //DELETE
-    
+        routes.delete('/deleteGif', [
+            body('GifToDelete').isString().notEmpty()
+            body('user').isString().notEmpty()
+        ], this.deleteGif.bind(this))
+
+
         return routes
+    }
+
+    private async deleteGif(req: Request, res: Response) {
+        try {
+            const gustavoRes = await fetch(`http://${this.server.gustavoIP}/gif-reaction`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': `bearer ${this.server.gustavoSecret}`
+                },
+            })
+            const response = await gustavoRes.json()
+            res.status(200)
+            res.send(response)
+        } catch(e) {
+            res.status(500)
+            console.log(e)
+            res.send({ success: false, message: 'Internal server error.' })
+        }
     }
 
     private async getUsers(req: Request, res: Response) {
