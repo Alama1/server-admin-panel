@@ -2,7 +2,7 @@ import express, { Express, Request, Response, NextFunction } from 'express'
 import dotenv from 'dotenv'
 import { expressRouter } from './Router'
 import Application from '../Application'
-import jwt from "jsonwebtoken";
+import jwt, {JwtPayload} from "jsonwebtoken";
 import cors from 'cors'
 import https from 'https'
 import fs from 'fs'
@@ -18,9 +18,12 @@ export class Server {
     public gustavoIP: string
     public gustavoSecret: string
     private unrestrictedRoutes: Array<string>
+    private adminLevelAccess: Array<string>
 
     constructor(app: Application) {
         this.app = app
+
+        
         
         this.server = express()
 
@@ -32,7 +35,10 @@ export class Server {
             throw Error('Cannot find gustavo ip and secret in the env variables.')
         }
         this.unrestrictedRoutes = ['/login', '/signup', '/hamster', '/globalGifs']
+        this.adminLevelAccess = ['/command', '/hamster', '/addReactionGif', '/reactionChance', '/deleteGif']
     }
+
+    
 
     private configureRoutes(): void {
         const router = new expressRouter(this)
@@ -64,6 +70,13 @@ export class Server {
     }
 
     private authCheck(req: Request, res: Response, next: NextFunction): void {
+        interface userPayLoad {
+            accessLevel?: string;
+            username: string;
+            email: string;
+            verified: boolean;
+        }
+
         if (this.unrestrictedRoutes.some((element) => element === req.originalUrl)) {
             return next()
         }
@@ -78,6 +91,11 @@ export class Server {
         const token = authToken.split(' ')[1]
 
         jwt.verify(token, this.app.config.properties.jwt.secret, (err, user) => {
+            if (this.adminLevelAccess.some((element) => element === req.originalUrl)) {
+                if ((user as userPayLoad).accessLevel !== 'admin') {
+                    return res.status(403).send({ success: false, message: 'User is not an admin.' })
+                }
+            }
             if (err) {
                 res.status(403)
                 return res.send({ success: false, message: 'Token verification failed.' })
