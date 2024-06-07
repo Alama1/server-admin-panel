@@ -15,7 +15,7 @@ const UserSchema: Schema = new Schema({
     password: { type: String, required: true },
     verified: { type: Boolean, default: false },
     verificationString: { type: String, required: true },
-    acessLevel: { type: String, default: 'user' }
+    accessLevel: { type: String, default: 'user' }
 })
 
 export const userModel = mongoose.model<IUser>('user', UserSchema)
