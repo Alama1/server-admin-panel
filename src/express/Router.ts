@@ -55,8 +55,8 @@ export class expressRouter {
         //PUT
     
         //DELETE
-        routes.delete('/deleteGif', [
-            body('GifToDelete').isString().notEmpty(),
+        routes.patch('/deleteGif', [
+            body('gifToDelete').isString().notEmpty(),
             body('user').isString().notEmpty()
         ], this.deleteGif.bind(this))
 
@@ -66,19 +66,21 @@ export class expressRouter {
 
     private async deleteGif(req: Request, res: Response) {
         try {
+            const { gifToDelete, user } = req.body
             const gustavoRes = await fetch(`http://${this.server.gustavoIP}/gif-reaction`, {
-                method: 'DELETE',
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     'authorization': `bearer ${this.server.gustavoSecret}`
                 },
+                body: JSON.stringify({ gifToDelete, user })
             })
             const response = await gustavoRes.json()
             res.status(200)
             res.send(response)
         } catch(e) {
             res.status(500)
-            console.log(e)
+            console.error(e)
             res.send({ success: false, message: 'Internal server error.' })
         }
     }
@@ -97,7 +99,7 @@ export class expressRouter {
             res.send(response)
         } catch(e) {
             res.status(500)
-            console.log(e)
+            console.error(e)
             res.send({ success: false, message: 'Internal server error.' })
         }
     }
@@ -125,7 +127,7 @@ export class expressRouter {
             res.send(response)
         } catch(e) {
             res.status(500)
-            console.log(e)
+            console.error(e)
             res.send({ success: false, message: 'Internal server error.' })
         }
     }
@@ -144,7 +146,7 @@ export class expressRouter {
             res.send(response)
         } catch(e) {
             res.status(500)
-            console.log(e)
+            console.error(e)
             res.send({ success: false, message: 'Internal server error.' })
         }
     }
@@ -189,7 +191,7 @@ export class expressRouter {
             res.send(response)
         } catch(e) {
             res.status(500)
-            console.log(e)
+            console.error(e)
             res.send({ success: false, message: 'Internal server error.' })
         }
     }
@@ -231,7 +233,7 @@ export class expressRouter {
                 res.send({ success: false, message: 'User with this email already exists!' })
                 return
             }
-            console.log(error.message)
+            console.error(error.message)
             res.send({ success: false, message: 'Error crating user!' })
         })
     }
