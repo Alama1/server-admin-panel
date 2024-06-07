@@ -56,7 +56,7 @@ export class expressRouter {
     
         //DELETE
         routes.delete('/deleteGif', [
-            body('GifToDelete').isString().notEmpty()
+            body('GifToDelete').isString().notEmpty(),
             body('user').isString().notEmpty()
         ], this.deleteGif.bind(this))
 
