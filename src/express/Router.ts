@@ -25,6 +25,7 @@ export class expressRouter {
         routes.get('/gustavoGifs', this.getServerGifs.bind(this))
         routes.get('/reactionChances', this.getReactionChances.bind(this))
         routes.get('/users', this.getUsers.bind(this))
+        routes.get('/persona', this.getPersona.bind(this))
     
         //POST
         routes.post('/command',[
@@ -51,6 +52,9 @@ export class expressRouter {
             body('gifChance').notEmpty(),
             body('type').isString().notEmpty()
         ] , this.setReactionChances.bind(this))
+        routes.post('/persona', [
+            body('persona').isString().notEmpty()
+        ], this.setPersona.bind(this))
     
         //PUT
     
@@ -151,6 +155,25 @@ export class expressRouter {
         }
     }
 
+    private async getPersona(req: Request, res: Response) {
+        try {
+            const gustavoRes = await fetch(`http://${this.server.gustavoIP}/persona`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': `bearer ${this.server.gustavoSecret}`
+                }
+            })
+            const response = await gustavoRes.json()
+            res.status(200)
+            res.send(response)
+        } catch(e) {
+            res.status(500)
+            console.error(e)
+            res.send({ success: false, message: 'Internal server error.' })
+        }
+    }
+
     private async execCommand(req: Request, res: Response): Promise<void> {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -185,6 +208,33 @@ export class expressRouter {
                     'authorization': `bearer ${this.server.gustavoSecret}`
                 },
                 body: JSON.stringify({ user, url })
+            })
+            const response = await gustavoRes.json()
+            res.status(200)
+            res.send(response)
+        } catch(e) {
+            res.status(500)
+            console.error(e)
+            res.send({ success: false, message: 'Internal server error.' })
+        }
+    }
+
+    private async setPersona(req: Request, res: Response): Promise<void> {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(400).json({ success: false, message: errors.array() });
+            return
+        }
+
+        const { persona } = req.body
+        try {
+            const gustavoRes = await fetch(`http://${this.server.gustavoIP}/persona`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': `bearer ${this.server.gustavoSecret}`
+                },
+                body: JSON.stringify({ persona })
             })
             const response = await gustavoRes.json()
             res.status(200)
